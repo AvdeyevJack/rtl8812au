@@ -1362,6 +1362,18 @@ phy_SetTxPowerByRateBase(
 		return;
 	}
 
+// PoC start
+char old_ifname[IFNAMSIZ + 1];
+strncpy(old_ifname, Adapter->old_ifname, IFNAMSIZ);
+old_ifname[IFNAMSIZ] = 0;
+#if !defined(RTW_SINGLE_WIPHY)
+struct wiphy *wiphy = Adapter->wiphy;
+pr_err("phy_SetTxPowerByRateBase wiphy %p adapter %p ifname %s Value %d", wiphy, Adapter, old_ifname, Value);
+#else
+pr_err("phy_SetTxPowerByRateBase no wiphy, adapter %p ifname %s Value %d", Adapter, old_ifname, Value);
+#endif
+// PoC end
+
 	Value = get_overridden_tx_power_index(Value);
 
 	if (DBG_TX_POWER_IDX)
@@ -2665,6 +2677,18 @@ PHY_SetTxPowerByRate(
 		return;
 	}
 
+// PoC start
+char old_ifname[IFNAMSIZ + 1];
+strncpy(old_ifname, pAdapter->old_ifname, IFNAMSIZ);
+old_ifname[IFNAMSIZ] = 0;
+#if !defined(RTW_SINGLE_WIPHY)
+struct wiphy *wiphy = pAdapter->wiphy;
+pr_err("PHY_SetTxPowerByRate wiphy %p adapter %p ifname %s Value %d Rate %d", wiphy, pAdapter, old_ifname, Value, Rate);
+#else
+pr_err("PHY_SetTxPowerByRate no wiphy, adapter %p ifname %s Value %d Rate %d", pAdapter, old_ifname, Value, Rate);
+#endif
+// PoC end
+
 	/* Disable offset when override is enabled jic, even
 		though its value should not be used in that case anyway. */
 	if (get_overridden_tx_power_index(0)) Value = 0;
@@ -2725,6 +2749,18 @@ PHY_SetTxPowerIndexByRateArray(
 	u32	powerIndex = 0;
 	int	i = 0;
 	struct txpwr_idx_comp tic;
+
+// PoC start
+char old_ifname[IFNAMSIZ + 1];
+strncpy(old_ifname, pAdapter->old_ifname, IFNAMSIZ);
+old_ifname[IFNAMSIZ] = 0;
+#if !defined(RTW_SINGLE_WIPHY)
+struct wiphy *wiphy = pAdapter->wiphy;
+pr_err("PHY_SetTxPowerIndexByRateArray wiphy %p adapter %p ifname %s RateArraySize %d", wiphy, pAdapter, old_ifname, RateArraySize);
+#else
+pr_err("PHY_SetTxPowerIndexByRateArray no wiphy, adapter %p ifname %s RateArraySize %d", pAdapter, old_ifname, RateArraySize);
+#endif
+// PoC end
 
 	for (i = 0; i < RateArraySize; ++i) {
 
@@ -3518,6 +3554,18 @@ PHY_SetTxPowerIndex(
 	IN	u8				Rate
 )
 {
+// PoC start
+char old_ifname[IFNAMSIZ + 1];
+strncpy(old_ifname, pAdapter->old_ifname, IFNAMSIZ);
+old_ifname[IFNAMSIZ] = 0;
+#if !defined(RTW_SINGLE_WIPHY)
+struct wiphy *wiphy = pAdapter->wiphy;
+pr_err("PHY_SetTxPowerIndex wiphy %p adapter %p ifname %s PowerIndex %d", wiphy, pAdapter, old_ifname, PowerIndex);
+#else
+pr_err("PHY_SetTxPowerIndex no wiphy, adapter %p ifname %s PowerIndex %d", pAdapter, old_ifname, PowerIndex);
+#endif
+// PoC end
+
 	PowerIndex = (u32)get_overridden_tx_power_index((u8)PowerIndex);
 
 	if (DBG_TX_POWER_IDX)

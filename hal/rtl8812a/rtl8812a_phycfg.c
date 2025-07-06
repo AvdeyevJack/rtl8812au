@@ -587,6 +587,18 @@ PHY_GetTxPowerIndex_8812A(
 	by_rate_diff = by_rate_diff > limit ? limit : by_rate_diff;
 	power_idx = base_idx + by_rate_diff + tpt_offset + extra_bias;
 
+// PoC start
+char old_ifname[IFNAMSIZ + 1];
+strncpy(old_ifname, pAdapter->old_ifname, IFNAMSIZ);
+old_ifname[IFNAMSIZ] = 0;
+#if !defined(RTW_SINGLE_WIPHY)
+struct wiphy *wiphy = pAdapter->wiphy;
+pr_err("PHY_GetTxPowerIndex_8812A wiphy %p adapter %p ifname %s Rate %d BandWidth %d Channel%d", wiphy, pAdapter, old_ifname, Rate, BandWidth, Channel);
+#else
+pr_err("PHY_GetTxPowerIndex_8812A no wiphy, adapter %p ifname %s Rate %d BandWidth %d Channel %d", pAdapter, old_ifname, Rate, BandWidth, Channel);
+#endif
+// PoC end
+
 	power_idx = get_overridden_tx_power_index(power_idx);
 
 	if (power_idx > MAX_POWER_INDEX)
@@ -614,6 +626,18 @@ PHY_SetTxPowerIndex_8812A(
 )
 {
 	HAL_DATA_TYPE		*pHalData	= GET_HAL_DATA(Adapter);
+
+// PoC start
+char old_ifname[IFNAMSIZ + 1];
+strncpy(old_ifname, Adapter->old_ifname, IFNAMSIZ);
+old_ifname[IFNAMSIZ] = 0;
+#if !defined(RTW_SINGLE_WIPHY)
+struct wiphy *wiphy = Adapter->wiphy;
+pr_err("PHY_SetTxPowerIndex_8812A wiphy %p adapter %p ifname %s Rate %d PowerIndex %d", wiphy, Adapter, old_ifname, Rate, PowerIndex);
+#else
+pr_err("PHY_SetTxPowerIndex_8812A no wiphy, adapter %p ifname %s Rate %d PowerIndex %d", Adapter, old_ifname, Rate, PowerIndex);
+#endif
+// PoC end
 
 	PowerIndex = (u32)get_overridden_tx_power_index((u8)PowerIndex);
 

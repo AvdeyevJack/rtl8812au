@@ -3679,6 +3679,13 @@ int value;
 if(value > 40)
 	value = 40;
 
+// PoC start
+char old_ifname[IFNAMSIZ + 1];
+strncpy(old_ifname, padapter->old_ifname, IFNAMSIZ);
+old_ifname[IFNAMSIZ] = 0;
+pr_err("cfg80211_rtw_set_txpower wiphy %p adapter %p ifname %s val %d", wiphy, padapter, old_ifname, value);
+// PoC end
+
 if(type == NL80211_TX_POWER_FIXED) {
 	if (value < 0) {
 		// the driver will read and bound this value if it's over-range
@@ -3735,6 +3742,13 @@ static int cfg80211_rtw_get_txpower(struct wiphy *wiphy,
 	HAL_DATA_TYPE *pHalData = GET_HAL_DATA(padapter);
 
 	RTW_INFO("%s\n", __func__);
+
+// PoC start
+char old_ifname[IFNAMSIZ + 1];
+strncpy(old_ifname, padapter->old_ifname, IFNAMSIZ);
+old_ifname[IFNAMSIZ] = 0;
+pr_err("cfg80211_rtw_get_txpower wiphy %p adapter %p ifname %s dbm %d", wiphy, padapter, old_ifname, dbm);
+// PoC end
 
 	// *dbm = (12);
 	override = get_overridden_tx_power_index(0);
