@@ -19,4 +19,12 @@
 #define dev_addr_set(netdev, ethdata) _rtw_memcpy(netdev->dev_addr, ethdata, ETH_ALEN)
 #endif
 
+#include <linux/list.h>
+
+typedef struct adapter_tx_pwr_override {
+	char				ifname[IFNAMSIZ];
+	int					tx_pwr_override;
+	struct list_head	list;
+} ADAPTER_TX_PWR_OVERRIDE, *PADAPTER_TX_PWR_OVERRIDE;
+
 #endif

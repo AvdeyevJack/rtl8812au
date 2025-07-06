@@ -1658,6 +1658,7 @@ static void __exit rtw_drv_halt(void)
 	rtw_suspend_lock_uninit();
 	rtw_ndev_notifier_unregister();
 	rtw_inetaddr_notifier_unregister();
+	clear_overridden_tx_power_indices();
 
 	RTW_PRINT("module exit success\n");
 

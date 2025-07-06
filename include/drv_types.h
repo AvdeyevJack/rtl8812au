@@ -442,13 +442,33 @@ struct registry_priv {
 };
 
 extern int rtw_tx_pwr_idx_override;
-static u8 get_overridden_tx_power_index(u8 index) {
-	int override_index = *(volatile int*)&rtw_tx_pwr_idx_override;
-	if (override_index < 0)
-		override_index = 0;
-	if (override_index > MAX_POWER_INDEX)
-		override_index = MAX_POWER_INDEX;
-	*(volatile int*)&rtw_tx_pwr_idx_override = override_index;
+extern int get_overridden_tx_power_index_for_adapter(_adapter *padapter, int /*out*/ *index);
+extern int set_overridden_tx_power_index_for_adapter(_adapter *padapter, int index);
+extern int clear_overridden_tx_power_indices();
+
+static u8 bound_overridden_tx_power_index(u8 index) {
+	if (index < 0)
+		index = 0;
+	if (index > MAX_POWER_INDEX)
+		index = MAX_POWER_INDEX;
+}
+static u8 get_overridden_tx_power_index(_adapter *padapter, u8 index) {
+	int override_index = 0;
+	int err = get_overridden_tx_power_index_for_adapter(padapter, &override_index);
+	if (!err) {
+		return override_index;
+	}
+	else if (-ENOENT != err) {
+		// TODO: error handling
+		pr_err("Failed to get TX power index");
+		return index;
+	}
+	else {
+		// No such entry
+		override_index = *(volatile int*)&rtw_tx_pwr_idx_override;
+		override_index = bound_overridden_tx_power_index(override_index);
+		*(volatile int*)&rtw_tx_pwr_idx_override = override_index;
+	}
 
 	if (override_index)
 		return (u8)override_index;

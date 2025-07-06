@@ -3681,10 +3681,16 @@ if(value > 40)
 
 if(type == NL80211_TX_POWER_FIXED) {
 	if (value < 0) {
-		// the driver will read and bound this value if it's over-range
-		rtw_tx_pwr_idx_override = -value;
+		// the driver will bound this value if it's over-range
+		if (set_overridden_tx_power_index_for_adapter(padapter, -value))
+		{
+			pr_err("Failed to set txpower for adapter %s", padapter->old_ifname);
+		}
 	} else {
-		rtw_tx_pwr_idx_override = 0;
+		if (set_overridden_tx_power_index_for_adapter(padapter, 0))
+		{
+			pr_err("Failed to reset txpower for adapter %s", padapter->old_ifname);
+		}
 		pHalData->CurrentTxPwrIdx = value;
 	}
 	rtw_hal_set_tx_power_level(padapter, pHalData->current_channel);
@@ -3737,7 +3743,7 @@ static int cfg80211_rtw_get_txpower(struct wiphy *wiphy,
 	RTW_INFO("%s\n", __func__);
 
 	// *dbm = (12);
-	override = get_overridden_tx_power_index(0);
+	override = get_overridden_tx_power_index(padapter, 0);
 	if (override)
 		*dbm = -(int)override;
 	else

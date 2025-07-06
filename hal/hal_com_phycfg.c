@@ -1362,7 +1362,7 @@ phy_SetTxPowerByRateBase(
 		return;
 	}
 
-	Value = get_overridden_tx_power_index(Value);
+	Value = get_overridden_tx_power_index(Adapter, Value);
 
 	if (DBG_TX_POWER_IDX)
 		RTW_INFO( "TXPWR: by-rate-base [%sG][%c] RateSection:%d = %d\n",
@@ -2667,7 +2667,7 @@ PHY_SetTxPowerByRate(
 
 	/* Disable offset when override is enabled jic, even
 		though its value should not be used in that case anyway. */
-	if (get_overridden_tx_power_index(0)) Value = 0;
+	if (get_overridden_tx_power_index(pAdapter, 0)) Value = 0;
 
 	if (DBG_TX_POWER_IDX)
 		RTW_INFO( "TXPWR: by-rate-offset [%sG][%c] Rate:%s = %d\n",
@@ -2728,7 +2728,7 @@ PHY_SetTxPowerIndexByRateArray(
 
 	for (i = 0; i < RateArraySize; ++i) {
 
-		powerIndex = (u32)get_overridden_tx_power_index((u8)powerIndex);
+		powerIndex = (u32)get_overridden_tx_power_index(pAdapter, (u8)powerIndex);
 
 #if DBG_TX_POWER_IDX
 		//struct txpwr_idx_comp tic;
@@ -3518,7 +3518,7 @@ PHY_SetTxPowerIndex(
 	IN	u8				Rate
 )
 {
-	PowerIndex = (u32)get_overridden_tx_power_index((u8)PowerIndex);
+	PowerIndex = (u32)get_overridden_tx_power_index(pAdapter, (u8)PowerIndex);
 
 	if (DBG_TX_POWER_IDX)
 		RTW_INFO( "TXPWR: set-index [%c] %s = %d\n",

@@ -586,7 +586,10 @@ MODULE_PARM_DESC(rtw_pll_ref_clk_sel, "force pll_ref_clk_sel, 0xF:use autoload v
 
 int rtw_tx_pwr_idx_override = 0;
 module_param(rtw_tx_pwr_idx_override, int, 0644);
-MODULE_PARM_DESC(rtw_tx_pwr_idx_override, "0-63 int value to force-set all power index values to");
+MODULE_PARM_DESC(rtw_tx_pwr_idx_override, "0-63 int value to force-set all initial power index values to");
+
+static DEFINE_MUTEX(tx_pwr_idx_override_mutex);
+static LIST_HEAD(tx_pwr_idx_override_per_adapter);
 
 int rtw_tx_pwr_by_rate = CONFIG_TXPWR_BY_RATE_EN;
 module_param(rtw_tx_pwr_by_rate, int, 0644);
@@ -4823,4 +4826,92 @@ int rtw_vendor_ie_set_api(struct net_device *dev, char *extra)
 }
 EXPORT_SYMBOL(rtw_vendor_ie_set_api);
 
-#endif
+#endif // CONFIG_APPEND_VENDOR_IE_ENABLE
+
+inline bool is_ifname_match(PADAPTER_TX_PWR_OVERRIDE pentry, _adapter *padapter)
+{
+	if (!pentry || !padapter) {
+		return false;
+	}
+
+	return strncmp(pentry->ifname, padapter->old_ifname, IFNAMSIZ) == 0;
+}
+
+// tx_pwr_idx_override_mutex should be held when calling this function
+static PADAPTER_TX_PWR_OVERRIDE find_overridden_tx_power_index_for_adapter(
+	_adapter *padapter)
+{
+	PADAPTER_TX_PWR_OVERRIDE pentry = NULL;
+	PADAPTER_TX_PWR_OVERRIDE pfound = NULL;
+
+	list_for_each_entry(pentry, &tx_pwr_idx_override_per_adapter, list) {
+		if (is_ifname_match(pentry, padapter)) {
+			pfound = pentry;
+			break;
+		}
+	}
+
+	return pfound;
+}
+
+int get_overridden_tx_power_index_for_adapter(_adapter *padapter, int *index)
+{
+	PADAPTER_TX_PWR_OVERRIDE pentry = NULL;
+
+	mutex_lock(&tx_pwr_idx_override_mutex);
+	pentry = find_overridden_tx_power_index_for_adapter(padapter);
+	if (pentry) {
+		*index = pentry->tx_pwr_override;
+	}
+	mutex_unlock(&tx_pwr_idx_override_mutex);
+
+	if (NULL == pentry) {
+		return -ENOENT;
+	}
+
+	return 0;
+}
+
+int set_overridden_tx_power_index_for_adapter(_adapter *padapter, int index)
+{
+	int bound_index = bound_overridden_tx_power_index(index);
+	PADAPTER_TX_PWR_OVERRIDE pentry = NULL;
+
+	mutex_lock(&tx_pwr_idx_override_mutex);
+	pentry = find_overridden_tx_power_index_for_adapter(padapter);
+	if (pentry) {
+		pentry->tx_pwr_override = bound_index;
+
+		// Nothing else to do
+		mutex_unlock(&tx_pwr_idx_override_mutex);
+		return 0;
+	}
+
+	pentry = kmalloc(sizeof(*pentry), GFP_KERNEL);
+	if (NULL == pentry) {
+		mutex_unlock(&tx_pwr_idx_override_mutex);
+		pr_err("Failed to allocate memory for adapter_tx_pwr_override");
+		return -ENOMEM;
+	}
+
+	pentry->tx_pwr_override = bound_index;
+	strncpy(pentry->ifname, padapter->old_ifname, IFNAMSIZ);
+	pentry->ifname[IFNAMSIZ - 1] = 0;
+
+	list_add_tail(&pentry->list, &tx_pwr_idx_override_per_adapter);
+	mutex_unlock(&tx_pwr_idx_override_mutex);
+	return 0;
+}
+
+int clear_overridden_tx_power_indices()
+{
+	PADAPTER_TX_PWR_OVERRIDE pentry;
+	PADAPTER_TX_PWR_OVERRIDE tmp;
+
+	mutex_lock(&tx_pwr_idx_override_mutex);
+	list_for_each_entry_safe(pentry, tmp, &tx_pwr_idx_override_per_adapter, list) {
+		list_del(&pentry->list);
+		kfree(pentry);
+	}
+	mutex_unlock(&tx_pwr_idx_override_mutex);
+}
