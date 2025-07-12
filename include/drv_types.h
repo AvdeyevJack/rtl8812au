@@ -442,15 +442,16 @@ struct registry_priv {
 };
 
 extern int rtw_tx_pwr_idx_override;
-extern int get_overridden_tx_power_index_for_adapter(_adapter *padapter, int /*out*/ *index);
-extern int set_overridden_tx_power_index_for_adapter(_adapter *padapter, int index);
-extern int clear_overridden_tx_power_indices();
+int get_overridden_tx_power_index_for_adapter(_adapter *padapter, int /*out*/ *index);
+int set_overridden_tx_power_index_for_adapter(_adapter *padapter, int index);
+void clear_overridden_tx_power_indices(void);
 
 static u8 bound_overridden_tx_power_index(u8 index) {
 	if (index < 0)
 		index = 0;
 	if (index > MAX_POWER_INDEX)
 		index = MAX_POWER_INDEX;
+	return index;
 }
 static u8 get_overridden_tx_power_index(_adapter *padapter, u8 index) {
 	int override_index = 0;

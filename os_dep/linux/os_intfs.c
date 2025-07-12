@@ -4903,7 +4903,7 @@ int set_overridden_tx_power_index_for_adapter(_adapter *padapter, int index)
 	return 0;
 }
 
-int clear_overridden_tx_power_indices()
+void clear_overridden_tx_power_indices()
 {
 	PADAPTER_TX_PWR_OVERRIDE pentry;
 	PADAPTER_TX_PWR_OVERRIDE tmp;
